@@ -1,0 +1,11 @@
+
+
+
+#ifndef FIRE_SYSTEM_PRIVATE_H_
+#define FIRE_SYSTEM_PRIVATE_H_
+
+
+
+
+
+#endif /* FIRE_SYSTEM_PRIVATE_H_ */
