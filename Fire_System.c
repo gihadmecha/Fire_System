@@ -52,7 +52,7 @@ static void Fire_System_State_Fine ()
 	
 	STEPPER1_Stop ();
 	
-	//LCD_Clear();
+	LCD_Clear();
 	
 	LCD_GoTo(0, 0);
 	LCD_WriteString("Fine");
@@ -71,7 +71,7 @@ static void Fire_System_State_Heat ()
 	
 	STEPPER1_Stop ();
 	
-	//LCD_Clear();
+	LCD_Clear();
 	
 	LCD_GoTo(0, 0);
 	LCD_WriteString("Heat");
@@ -92,7 +92,7 @@ static void Fire_System_State_Fire ()
 	
 	STEPPER1_Forward ();
 	
-	//LCD_Clear();
+	LCD_Clear();
 	
 	LCD_GoTo(0, 0);
 	LCD_WriteString("Fire");
@@ -106,6 +106,62 @@ static void Fire_System_State_Fire ()
 
 static void Fire_System_GetPassward ()
 {
+	char key = KEYPAD_GetKey();
 	
+	if (key != NULL)
+	{
+		LCD_Clear();
+		LCD_GoTo(0, 0);
+		LCD_WriteChar(key);
+		LCD_WriteChar(key);
+		
+		char passward[100];
+		
+		unsigned int index = 0;
+		
+		passward[index] = key;
+	
+		while (passward[index] != '=' && index < 99)
+		{
+			key = KEYPAD_GetKey();
+			
+			if (key != NULL)
+			{
+				LCD_WriteChar(key);
+				index++;
+				passward[index] = key;
+			}
+		}
+		passward[index] = NULL;
+		
+		if (Fire_System_CompareString ("954", passward))
+		{
+			fireMode = 0;
+		}
+		else
+		{
+			Fire_System_State_WrongPassword ();
+		}
+	}
 }
 
+static u8 Fire_System_CompareString (char* string1, char* string2)
+{
+	for (u32 index = 0; string1[index]; index++)
+	{
+		if (string1[index] != string2[index])
+		{
+			return 0;
+		}
+	}
+	
+	return 1;
+}
+
+static void Fire_System_State_WrongPassword ()
+{
+	LCD_Clear();
+	LCD_GoTo(0, 0);
+	LCD_WriteString("Wrong Password!!");
+	_delay_ms(1000);
+}
