@@ -27,25 +27,31 @@ extern void Fire_System_Run ()
 {
 	temperature = LM35();
 	
-	if (temperature <= 400)
+	if (fireMode == 0)
 	{
-		Fire_System_State_Fine();
+		if (temperature <= 400)
+		{
+			Fire_System_State_Fine();
+		}
+		else if (temperature > 450)
+		{
+			smoke = MQ_2();
+			
+			if (smoke <= 50)
+			{
+				Fire_System_State_Heat ();
+			}
+			else if (smoke > 50)
+			{
+				Fire_System_State_Fire();
+			}
+		}
 	}
-	else if (temperature > 450)
+	else if (fireMode == 1)
 	{
 		smoke = MQ_2();
 		
-		if (smoke <= 50)
-		{
-			Fire_System_State_Heat ();
-		}
-		else if (smoke > 50)
-		{
-			do 
-			{
-				Fire_System_State_Fire();
-			} while (fireMode == 1);
-		}
+		Fire_System_State_Fire();
 	}
 }
 
