@@ -3,6 +3,8 @@
 
 to measure the environment's temperature and detect smoke levels, enabling the timely activation of water sprinklers and alarms in response to a potential fire hazard.
 
+Demo: https://youtu.be/VXHsIy-3uFs?si=8t_whU7VJDfkJ1_V
+
 ## How
 It gets the environment's temperature using a Temperature Sensor, and the smoke level using a Smoke Sensor and puts them on the Display Screen.
 - Normal State:
