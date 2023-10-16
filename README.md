@@ -1,5 +1,6 @@
 # Fire_System
-![](https://github.com/gihadmecha/Fire_System/blob/main/Fine_State.png)
+
+https://github.com/gihadmecha/Fire_System/assets/19871755/9dd0edd9-05c1-49cf-be58-79f162afbc46
 
 to measure the environment's temperature and detect smoke levels, enabling the timely activation of water sprinklers and alarms in response to a potential fire hazard.
 
