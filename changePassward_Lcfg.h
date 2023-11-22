@@ -1,0 +1,9 @@
+
+
+#ifndef CHANGEPASSWARD_LCFG_H_
+#define CHANGEPASSWARD_LCFG_H_
+
+#define		PASSWARD_SIZE	10
+
+
+#endif /* CHANGEPASSWARD_LCFG_H_ */
