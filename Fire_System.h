@@ -4,6 +4,7 @@
 #ifndef FIRE_SYSTEM_H_
 #define FIRE_SYSTEM_H_
 
+#include "getPassward.h"
 #include "changePassward.h"
 
 extern void Fire_System_Init ();

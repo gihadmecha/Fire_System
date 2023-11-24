@@ -1,255 +1,84 @@
 
-#include "Fire_System_Private.h"
 #include "Fire_System.h"
+#include "Fire_System_Private.h"
 
-static u16 temperature;
-static u16 smoke;
+static u8 passward[20] = {0};
+u8 passwardSize = sizeof(passward)/sizeof(passward[0]);
 
-static u8 fireMode = 0;
-static char key;
-static char passward[100];
-static unsigned int passwordIndex = 0;
+static u8 newPassward[20] = {NULL};
+static u8 newPasswardSize = sizeof (newPassward)/sizeof (newPassward[0]);
 
-static u8 mode = NORMAL;
+static u8 key = NULL;
 
-static double angle = -90;
+static u8 screen = Fire_System_NORMAL_SCREEN;
 
 extern void Fire_System_Init ()
 {
+	getPassward_Init ();
 	DIO_Init();
-	ADC_Init(ADC_VCC, ADC_PRESCALER_64);
-	TIMER1_ICR1_WRITE(TIMER1_TOP_VALUE);
-	SERVO_setAngle(angle);
-	TIMER1_Init(TIMER1_PRESCALER_8, TIMER1_FAST_PWM_ICR1_TOP, TIMER1_OC1A_CLEAR_ON_COMPARE_MATCH, TIMER1_OC1B_DISCONNECTED);
 	LCD_Init();
 	
-	ADC_Enable();
-	
-	Fire_System_State_Fine ();
-	
-	//STEPPER1_Stop ();
-	
-	changePassward_Init ();
+	changePassward_Init(newPassward, newPasswardSize);
 }
 
 extern void Fire_System_Run ()
 {
-	temperature = LM35();
+	Fire_System_getKey ();
 	
-	if (fireMode == 0)
-	{
-		if (temperature <= 400)
-		{
-			Fire_System_State_Fine();
-		}
-		else if (temperature > 450)
-		{
-			smoke = MQ_2();
-			
-			if (smoke <= 50)
-			{
-				Fire_System_State_Heat ();
-			}
-			else if (smoke > 50)
-			{
-				Fire_System_State_Fire();
-			}
-		}
-	}
-	else if (fireMode == 1)
-	{
-		smoke = MQ_2();
-		
-		Fire_System_State_Fire();
-	}
-	
-	Fire_System_changePassward ();
+	Fire_System_getPassward ();
 }
 
-static void Fire_System_changePassward ()
+static void Fire_System_getKey ()
 {
-	if (mode == NORMAL)
+	if (screen == Fire_System_NORMAL_SCREEN)
 	{
-		key = KEYPAD_GetKey ();
-		if (key == 'C')
+		if (Fire_System_trigger ())
 		{
-			mode = CHANGE_PASSWARD;
-			LCD_Clear();
+			if (key == '1')
+			{
+				passward[0] = NULL;
+				LCD_GoTo(0, 0);
+				LCD_WriteString("Enter Passward:");
+				screen = Fire_System_GET_PASSWARD_SCREEN;
+			}
+			else if (key == '2')
+			{
+				screen = Fire_System_CHANGE_PASSWARD_SCREEN;
+			}
 		}
 	}
-	
-	if (mode == CHANGE_PASSWARD)
+}
+
+static void Fire_System_getPassward ()
+{
+	if (screen == Fire_System_GET_PASSWARD_SCREEN)
 	{
-		if (changePassward_Run () == 0)
+		if (getPassward_Run (passward, passwardSize) == GET_PASSWARD_WAIT)
 		{
-			mode = NORMAL;
+			LCD_GoTo(1, 0);
+			LCD_WriteString(passward);
+			LCD_WriteString("				");
+		}
+		else
+		{
+			screen = Fire_System_NORMAL_SCREEN;
 			LCD_Clear();
 		}
 	}
 }
 
-static void Fire_System_State_Fine ()
+static u8 Fire_System_trigger ()
 {
-	smoke = 0;
-
-	LED1_Off();
-	LED2_Off();
+	static u8 lastKey = NULL;
 	
-	if (mode == NORMAL)
+	lastKey = key;
+	
+	key = KEYPAD_GetKey ();
+	
+	if (lastKey != key)
 	{
-		LCD_GoTo(0, 0);
-		LCD_WriteString("Fine");
-		LCD_GoTo(0, 6);
-		LCD_WriteString("Temp:");
-		LCD_WriteNumber_4Digit(temperature);
-		LCD_GoTo(1, 6);
-		LCD_WriteString("Smok:");
-		LCD_WriteNumber_4Digit(smoke);
+		return 1;
 	}
+	
+	return 0;
 }
-
-static void Fire_System_State_Heat ()
-{
-	LED1_On();
-	LED2_Off();
-	
-	if (mode == NORMAL)
-	{
-		LCD_GoTo(0, 0);
-		LCD_WriteString("Heat");
-		LCD_GoTo(0, 6);
-		LCD_WriteString("Temp:");
-		LCD_WriteNumber_4Digit(temperature);
-		LCD_GoTo(1, 6);
-		LCD_WriteString("Smok:");
-		LCD_WriteNumber_4Digit(smoke);
-	}
-}
-
-static void Fire_System_State_Fire ()
-{
-	static u8 servoDirection = 0;
-	
-	fireMode = 1;
-	
-	LED1_On();
-	LED2_On();
-	
-	//STEPPER1_Forward (Fire_System_GetPassward);
-	
-	if (servoDirection == 0)
-	{
-		angle += 1;
-		if (angle == 90)
-		{
-			servoDirection = 1;
-		}
-		SERVO_setAngle (angle);
-	}
-	else if (servoDirection == 1)
-	{
-		angle -= 1;
-		if (angle == -90)
-		{
-			servoDirection = 0;
-		}
-		SERVO_setAngle (angle);
-	}
-	
-	if (mode == NORMAL)
-	{
-		LCD_GoTo(0, 0);
-		LCD_WriteString("Fire");
-		LCD_GoTo(0, 6);
-		LCD_WriteString("Temp:");
-		LCD_WriteNumber_4Digit(temperature);
-		LCD_GoTo(1, 6);
-		LCD_WriteString("Smok:");
-		LCD_WriteNumber_4Digit(smoke);
-	}
-}
-
-static void Fire_System_CheckPeriodically ()
-{
-	key = KEYPAD_GetKey();
-	
-	if (key != NULL)
-	{
-		if (key != '=')
-		{
-			LCD_WriteChar(key);
-		}
-		passwordIndex++;
-		passward[passwordIndex] = key;
-	}
-}
-
-static void Fire_System_GetPassward ()
-{
-	if (mode == NORMAL)
-	{
-		key = KEYPAD_GetKey();
-		if (key != NULL && key != 'C')
-		{
-			passwordIndex = 0;
-			
-			LCD_Clear();
-			LCD_GoTo(0, 0);
-			LCD_WriteChar(key);
-			
-			passward[passwordIndex] = key;
-			
-			while (passward[passwordIndex] != '=' && passwordIndex < 99)
-			{
-				STEPPER1_Forward (Fire_System_CheckPeriodically);
-			}
-			passwordIndex++;
-			passward[passwordIndex] = NULL;
-			
-			if (Fire_System_CompareString ("954", passward))
-			{
-				fireMode = 0;
-			}
-			else
-			{
-				Fire_System_State_WrongPassword ();
-			}
-		}
-	}
-}
-
-static u8 Fire_System_CompareString (char* string1, char* string2)
-{
-	for (u32 index = 0; string1[index]; index++)
-	{
-		if (string1[index] != string2[index])
-		{
-			return 0;
-		}
-	}
-	
-	return 1;
-}
-
-static void Fire_System_State_WrongPassword ()
-{
-	LCD_Clear();
-	LCD_GoTo(0, 0);
-	LCD_WriteString("Wrong Password!!");
-	Fire_System_delay_ms(3000);
-	LCD_Clear();
-}
-
-static void Fire_System_delay_ms(u32 delay)
-{
-	for (u32 index = 0; index < (delay/ (DELAY * 4)); index++)
-	{
-		STEPPER1_Forward(Fire_System_GetPassward);
-		
-		if (fireMode == 0)
-		{
-			break;
-		}
-	}
-}
-

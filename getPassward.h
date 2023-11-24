@@ -4,7 +4,7 @@
 #define GETPASSWARD_H_
 
 #include "getPassward_Lcfg.h"
-#include "getPassward_Private.h"
+#include "StdTypes.h"
 
 #define		GET_PASSWARD_WAIT		1
 #define		GET_PASSWARD_DONE		2
