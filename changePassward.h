@@ -11,8 +11,8 @@
 
 #include "changePassward_Lcfg.h"
 
-extern void changePassward_Init ();
-extern int changePassward_Run ();
+extern void changePassward_Init (u8 passward[], u8 passwardSize);
+extern u8 changePassward_Run (u8 passward[], u8 passwardSize);
 
 
 

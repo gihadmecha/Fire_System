@@ -1,0 +1,10 @@
+
+
+#ifndef GETPASSWARD_LCFG_H_
+#define GETPASSWARD_LCFG_H_
+
+
+
+
+
+#endif /* GETPASSWARD_LCFG_H_ */
