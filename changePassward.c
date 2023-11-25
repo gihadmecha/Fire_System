@@ -2,10 +2,12 @@
 #include "changePassward.h"
 #include "changePassward_Private.h"
 
+static u8 firstUse = 0;
+
 static u8 passward[20] = {NULL};
 static u8 passwardSize = sizeof (passward)/sizeof (passward[0]);
 
-static u16 addressAddress = 1;
+static u16 addressAddress = 0;
 static u16 counterAddress = 2;
 static u16 eepromWriteCounter = 0;
 
@@ -27,10 +29,29 @@ extern void changePassward_Init (u8 newPassward[], u8 newPasswardSize)
 		//DIO_Init();
 		//LCD_Init();
 		
-		*(dataAddressPointer + 0) = EEPROM_read(addressAddress);
-		*(dataAddressPointer + 1) = EEPROM_read(addressAddress - 1);
+		if (firstUse == 0)
+		{
+			addressAddress = 0;
+			dataAddress = 2;
+			
+			counterAddress = dataAddress;
+			eepromWriteCounter = 0;
+
+			passwardAddress = 3;
+			
+			EEPROM_write (passwardAddress,     '0');
+			EEPROM_write (passwardAddress + 1, '0');
+			EEPROM_write (passwardAddress + 2, '0');
+			EEPROM_write (passwardAddress + 3, '0');
+			EEPROM_write (passwardAddress + 4, NULL);
+			
+			firstUse = 1;
+		}
 		
-		if ( (dataAddress > 1023 - passwardSize - 1) || (dataAddress < 2) )
+		*(dataAddressPointer + 0) = EEPROM_read(addressAddress);
+		*(dataAddressPointer + 1) = EEPROM_read(addressAddress + 1);
+		
+		if ( dataAddress > 1023 - passwardSize - 1)
 		{
 			dataAddress = 2;
 			EEPROM_write(addressAddress, *(dataAddressPointer + 0));
@@ -53,7 +74,7 @@ extern void changePassward_Init (u8 newPassward[], u8 newPasswardSize)
 
 extern u8 changePassward_Run (u8 newpassward[], u8 newpasswardSize)
 {
-	state = EEPROM_KeyPad_getPassward ( passward, passwardSize, passwardAddress);
+	EEPROM_KeyPad_getPassward ( passward, passwardSize, passwardAddress);
 	
 	if (state == CHANGE_PASSWARD_DONE && retrievalDone == 1)
 	{
@@ -72,7 +93,7 @@ extern u8 changePassward_Run (u8 newpassward[], u8 newpasswardSize)
 		}
 		
 		EEPROM_write(addressAddress, *(dataAddressPointer + 0));
-		EEPROM_write(addressAddress - 1, *(dataAddressPointer + 1) );
+		EEPROM_write(addressAddress + 1, *(dataAddressPointer + 1) );
 		
 		counterAddress = dataAddress;
 		EEPROM_write(counterAddress, 0);
@@ -160,12 +181,14 @@ static void EEPROM_KeyPad_passwardSave (u8 passward[], u16 passwardSize, u16 add
 	EEPROM_write (counterAddress, ++eepromWriteCounter);
 }
 
-static u8 EEPROM_KeyPad_getPassward (u8 passward[], u16 passwardSize, u16 address)
+static void EEPROM_KeyPad_getPassward (u8 passward[], u16 passwardSize, u16 address)
 {
 	static u16 index = 0;
 	
 	if (passward != NULL && index < passwardSize-1)
 	{
+		state = CHANGE_PASSWARD_WAIT;
+		
 		if (EEPROM_KeyPad_trigger ())
 		{
 			if (key != NULL)
@@ -175,8 +198,7 @@ static u8 EEPROM_KeyPad_getPassward (u8 passward[], u16 passwardSize, u16 addres
 					passward[index] = key;
 					index++;
 					passward[index] = NULL;
-					
-					return CHANGE_PASSWARD_WAIT;
+					state = CHANGE_PASSWARD_WAIT;
 				}
 				
 				else if (key == '=')
@@ -184,20 +206,16 @@ static u8 EEPROM_KeyPad_getPassward (u8 passward[], u16 passwardSize, u16 addres
 					EEPROM_KeyPad_passwardSave (passward, passwardSize, address);
 					
 					index = 0;
-					
 					retrievalDone = 1;
-					return CHANGE_PASSWARD_DONE;
+					state = CHANGE_PASSWARD_DONE;
 				}
 				
 				else if (key == 'C')
 				{
 					index = 0;
-					
-					return CHANGE_PASSWARD_DONE;
+					state = CHANGE_PASSWARD_DONE;
 				}
 			}
 		}
 	}
-	
-	return state;
 }

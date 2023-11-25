@@ -11,6 +11,9 @@
 
 #include "changePassward_Lcfg.h"
 
+#define		CHANGE_PASSWARD_WAIT			1
+#define		CHANGE_PASSWARD_DONE			2
+
 extern void changePassward_Init (u8 passward[], u8 passwardSize);
 extern u8 changePassward_Run (u8 passward[], u8 passwardSize);
 
