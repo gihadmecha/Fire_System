@@ -179,6 +179,8 @@ static void EEPROM_KeyPad_passwardSave (u8 passward[], u16 passwardSize, u16 add
 	EEPROM_write (address + index, NULL);
 	
 	EEPROM_write (counterAddress, ++eepromWriteCounter);
+	
+	passward[0] = NULL;
 }
 
 static void EEPROM_KeyPad_getPassward (u8 passward[], u16 passwardSize, u16 address)
@@ -213,6 +215,7 @@ static void EEPROM_KeyPad_getPassward (u8 passward[], u16 passwardSize, u16 addr
 				else if (key == 'C')
 				{
 					index = 0;
+					passward[0] = NULL;
 					state = CHANGE_PASSWARD_DONE;
 				}
 			}

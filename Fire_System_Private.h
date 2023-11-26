@@ -9,22 +9,24 @@
 
 #include "LED.h"
 #include "KEYPAD.h"
-#include "STEPPER_MOTOR.h"
 #include "SERVO.h"
 #include "MQ_2.h"
 
+#define		Fire_System_FINE_DEGREE		400
+#define		Fire_System_HEAT_DEGREE		450
 
-
-#define  NORMAL				0
-#define	 CHANGE_PASSWARD	1
-#define  PASSWARD			2
+#define		Fire_System_NORMAL		0
+#define		Fire_System_HEAT		1
 
 #define		Fire_System_NORMAL_SCREEN				0
 #define		Fire_System_GET_PASSWARD_SCREEN			1
 #define		Fire_System_CHANGE_PASSWARD_SCREEN		2
 #define		Fire_System_Error_SCREEN				3
 
+static void Fire_System_State_Fine ();
+static void Fire_System_State_Heat ();
 static void Fire_System_servo ();
+static void Fire_System_State_Fire ();
 static void Fire_System_getKey ();
 static void Fire_System_getPassward ();
 static void Fire_System_changePassward ();
