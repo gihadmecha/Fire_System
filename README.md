@@ -6,7 +6,7 @@ to measure the environment's temperature and detect smoke levels, enabling the t
 
 Demo: https://youtu.be/VXHsIy-3uFs?si=8t_whU7VJDfkJ1_V
 
-## How
+## How does it work
 It gets the environment's temperature using a Temperature Sensor, and the smoke level using a Smoke Sensor and puts them on the Display Screen.
 - Normal State:
   - If temp < 45 °C
@@ -18,13 +18,17 @@ It gets the environment's temperature using a Temperature Sensor, and the smoke 
   - The Red light is on
   - Sprinkler sprays water
 
-    
+### Enter the password feature:
 You can't exit Fire State until you fix the issue and enter the confirmation password.
+
+### Change the password feature:
+If you want to change the password, you must enter the current password.
 
 ## Hardware
 - atmega32
 - LM35
 - MQ-2
+- Servo
 - Stepper Motor
 - ln298
 - Keypad 4x4
@@ -33,6 +37,8 @@ You can't exit Fire State until you fix the issue and enter the confirmation pas
 - Resistors
 
 ## Peripherals
+- EEPROM
+- TIMER
 - ADC
 - DIO
 
